@@ -11,7 +11,7 @@ package object sarong {
         case n if n < 0 =>
           Literal(remains) :: acc
         case n =>
-          go(remains.drop(n+1), NewLine :: Literal(remains.take(n)) :: acc)
+          go(remains.drop(n + 1), NewLine :: Literal(remains.take(n)) :: acc)
       }
 
     go(s, Nil).reverse
@@ -24,9 +24,8 @@ package object sarong {
         case n if n < 0 =>
           remains :: acc
         case n =>
-          go(remains.drop(n+1), remains.take(n+1) :: acc)
+          go(remains.drop(n + 1), remains.take(n) :: acc)
       }
-
 
     go(s, Nil).reverse
   }
@@ -56,7 +55,7 @@ package object sarong {
     private def toLines(before: String, expressionLines: String, after: String): List[String] = {
       val prefix = " " * before.length
       val elines = findNewLines(expressionLines).collect { case Literal(l) => l }
-      if ( elines.length == 1 )
+      if (elines.length == 1)
         List(s"$before$expressionLines$after")
       else {
         val firstLine = elines.take(1).map(x => s"$before$x")
@@ -79,7 +78,6 @@ package object sarong {
           linify(t, Some(l.copy(tail = l.tail ::: List((he, hl)))), acc)
       }
 
-
     def sarong(args: Any*): String = {
 
       // Interleave the incoming expressions with their interstitial text.
@@ -89,7 +87,7 @@ package object sarong {
       // Expand strings into individual lines (strings without newlines) and their newlines.
 
       val elements: Iterable[Element] = rawElements flatMap {
-        case Literal(s) => findNewLines(s)
+        case Literal(s)    => findNewLines(s)
         case e: Expression => List(e)
       }
 
@@ -104,16 +102,17 @@ package object sarong {
         case List(Literal(s)) => List(s)
         case l @ List(Literal(b), Expression(e), Literal(a)) =>
           e match {
-            case xx: Iterable[_] => xx.map(_.toString).flatMap(toLines(b, _, a))
-            case x => toLines(b, x.toString, a)
+            case Iterate(xx) => xx.map(_.toString).flatMap(toLines(b, _, a))
+            case x           => toLines(b, x.toString, a)
           }
         case l =>
           l.foldLeft(List("")) {
-            case (h :: t, Literal(s)) =>
-              ( h + s ) :: t
-            case (h :: t, Expression(e)) =>
-              toLines(h, e.toString, "").reverse ::: t
-          }.reverse
+              case (h :: t, Literal(s)) =>
+                (h + s) :: t
+              case (h :: t, Expression(e)) =>
+                toLines(h, e.toString, "").reverse ::: t
+            }
+            .reverse
       }
 
       // Slam it all together and trim it up into a nice bounding box.
@@ -126,10 +125,10 @@ package object sarong {
     def boundingBox: String = {
       @tailrec
       def dropTrailingEmptyLines(
-                                  in: Iterable[String],
-                                  buffer: Iterable[String] = Iterable.empty,
-                                  acc: Iterable[String] = Iterable.empty
-                                ): Iterable[String] =
+          in: Iterable[String],
+          buffer: Iterable[String] = Iterable.empty,
+          acc: Iterable[String] = Iterable.empty
+      ): Iterable[String] =
         if (in.isEmpty)
           acc
         else {
@@ -141,7 +140,7 @@ package object sarong {
             dropTrailingEmptyLines(t, Iterable.empty, acc ++ buffer ++ Iterable(h))
         }
 
-      val allLines = dropTrailingEmptyLines(lines(s.trim).dropWhile(_.trim.isEmpty))
+      val allLines = dropTrailingEmptyLines(lines(s).dropWhile(_.trim.isEmpty))
       val nonEmptyLines = allLines.filterNot(_.trim.isEmpty)
 
       if (nonEmptyLines.isEmpty)
@@ -153,5 +152,12 @@ package object sarong {
       }
     }
   }
-}
 
+  implicit class IterableOps(iterable: Iterable[_]) {
+    def iterate: Iterate = Iterate(iterable)
+  }
+
+  final case class Iterate(iterable: Iterable[_]) {
+    override def toString: String = iterable.toString
+  }
+}

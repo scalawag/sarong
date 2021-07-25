@@ -66,7 +66,7 @@ class SarongTest extends AnyFunSpec with Matchers {
     val a = Iterable("a", "b", "c", "d")
 
     sarong"""
-      1 $a 2
+      1 ${a.iterate} 2
     """ shouldBe """
       1 a 2
       1 b 2
@@ -79,7 +79,7 @@ class SarongTest extends AnyFunSpec with Matchers {
     val a = Iterable("a", "b", "c", "d")
 
     sarong"""
-      - $a
+      - ${a.iterate}
     """ shouldBe """
       - a
       - b
@@ -96,7 +96,7 @@ class SarongTest extends AnyFunSpec with Matchers {
       Here's the thing. There's going to be a bulleted list under
       here that contains all of the items.
 
-      - $a
+      - ${a.iterate}
 
       That's all there is to say.
     """ shouldBe """
@@ -115,13 +115,35 @@ class SarongTest extends AnyFunSpec with Matchers {
     """.boundingBox
   }
 
+  it("should only treat a string as an when requested") {
+    val a = "abc"
+    sarong"""
+      1 ${a.toIterable.iterate} 2
+    """ shouldBe """
+      1 a 2
+      1 b 2
+      1 c 2
+    """.boundingBox
+  }
+
   it("should treat iterables like normal unless they're alone") {
     val a = Iterable("a", "b", "c", "d")
 
     sarong"""
-      1 $a, ${""}2
+      1 ${a.iterate}, ${""}2
     """ shouldBe """
       1 List(a, b, c, d), 2
     """.boundingBox
+  }
+
+  it("should preserve blank lines in bounding box") {
+    """
+      
+      1
+      
+      2
+      
+      
+    """.boundingBox shouldBe "1\n\n2"
   }
 }
