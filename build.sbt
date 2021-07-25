@@ -15,14 +15,10 @@
 organization := "org.scalawag.sarong"
 scalaVersion := "2.12.14"
 crossScalaVersions := Seq("2.12.14", "2.13.6")
-exportJars := true
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions")
 testOptions += Tests.Argument("-oDF")
-publishMavenStyle := true
-homepage := Some(url("http://scalawag.org/sarong"))
-startYear := Some(2021)
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.8",
 ) map (_ % "test")
 
-publishTo := Some(Resolver.file("Not actually used but required by publish-signed", file("/tmp/bogusrepo")))
+ThisBuild / versionScheme := Some("semver-spec")
