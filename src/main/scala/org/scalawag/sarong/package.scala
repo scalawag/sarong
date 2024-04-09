@@ -102,8 +102,8 @@ package object sarong {
         case List(Literal(s)) => List(s)
         case l @ List(Literal(b), Expression(e), Literal(a)) =>
           e match {
-            case Iterate(xx) => xx.map(_.toString).flatMap(toLines(b, _, a))
-            case x           => toLines(b, x.toString, a)
+            case u: Unfoldable => u.iterator.map(_.toString).flatMap(toLines(b, _, a))
+            case x             => toLines(b, x.toString, a)
           }
         case l =>
           l.foldLeft(List("")) {
@@ -153,11 +153,34 @@ package object sarong {
     }
   }
 
-  implicit class IterableOps(iterable: Iterable[_]) {
-    def iterate: Iterate = Iterate(iterable)
+  implicit class IteratorOps(me: Iterator[_]) {
+    def unfold: Unfoldable = IteratorUnfoldable(me)
   }
 
-  final case class Iterate(iterable: Iterable[_]) {
-    override def toString: String = iterable.toString
+  implicit class TraversableOnceOps(me: TraversableOnce[_]) {
+    def unfold: Unfoldable = TraversableOnceUnfoldable(me)
+  }
+
+  implicit class OptionOps(me: Option[_]) {
+    def unfold: Unfoldable = OptionUnfoldable(me)
+  }
+
+  sealed trait Unfoldable {
+    def iterator: Iterator[_]
+  }
+
+  final case class IteratorUnfoldable(me: Iterator[_]) extends Unfoldable {
+    override val iterator: Iterator[_] = me
+    override def toString: String = me.toString
+  }
+
+  final case class TraversableOnceUnfoldable(me: TraversableOnce[_]) extends Unfoldable {
+    override val iterator: Iterator[_] = me.toIterator
+    override def toString: String = me.toString
+  }
+
+  final case class OptionUnfoldable(me: Option[_]) extends Unfoldable {
+    override val iterator: Iterator[_] = me.iterator
+    override def toString: String = me.toString
   }
 }
