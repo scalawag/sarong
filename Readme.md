@@ -9,7 +9,7 @@ and other formatting around the strings when they contain newlines.
 ## Getting Started
 
 ```sbt
-libraryDependencies += "org.scalawag.sarong" %% "sarong" % "1.0.0"
+libraryDependencies += "org.scalawag.sarong" %% "sarong" % "1.0.1"
 ```
 
 ## Usage
@@ -218,4 +218,4 @@ o b
 ```
 
 Multiple unfolds on a single line is not supported. That's because I'm not 
-even sure what I would expect it to do! If you have a suggestion, I'm all ears! 
+even sure what I would expect it to do! If you have a suggestion, I'm all ears!
