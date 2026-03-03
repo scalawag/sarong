@@ -2,7 +2,7 @@ package org.scalawag
 
 import scala.annotation.tailrec
 
-package object sarong {
+package object sarong extends PlatformUnfoldables {
   // We need to split strings into lines this way to ensure that we get all the lines, including empty ones.
   private def findNewLines(s: String): List[Element] = {
     @tailrec
@@ -82,7 +82,7 @@ package object sarong {
 
       // Interleave the incoming expressions with their interstitial text.
 
-      val rawElements: Iterable[RawElement] = interleave(s.parts.map(Literal), args.map(Expression)).toList
+      val rawElements: Iterable[RawElement] = interleave(s.parts.map(Literal.apply), args.map(Expression.apply)).toList
 
       // Expand strings into individual lines (strings without newlines) and their newlines.
 
@@ -146,7 +146,7 @@ package object sarong {
       if (nonEmptyLines.isEmpty)
         ""
       else {
-        val prefixLength = nonEmptyLines.map(_.prefixLength(_ == ' ')).min
+        val prefixLength = nonEmptyLines.map(_.takeWhile(_ == ' ').length).min
         val prefix = " " * prefixLength
         allLines.map(_.stripPrefix(prefix)).mkString("\n")
       }
@@ -157,25 +157,16 @@ package object sarong {
     def unfold: Unfoldable = IteratorUnfoldable(me)
   }
 
-  implicit class TraversableOnceOps(me: TraversableOnce[_]) {
-    def unfold: Unfoldable = TraversableOnceUnfoldable(me)
-  }
-
   implicit class OptionOps(me: Option[_]) {
     def unfold: Unfoldable = OptionUnfoldable(me)
   }
 
-  sealed trait Unfoldable {
+  trait Unfoldable {
     def iterator: Iterator[_]
   }
 
   final case class IteratorUnfoldable(me: Iterator[_]) extends Unfoldable {
     override val iterator: Iterator[_] = me
-    override def toString: String = me.toString
-  }
-
-  final case class TraversableOnceUnfoldable(me: TraversableOnce[_]) extends Unfoldable {
-    override val iterator: Iterator[_] = me.toIterator
     override def toString: String = me.toString
   }
 

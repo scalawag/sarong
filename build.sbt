@@ -13,12 +13,36 @@
 // limitations under the License.
 
 organization := "org.scalawag.sarong"
-scalaVersion := "2.12.14"
-crossScalaVersions := Seq("2.12.14", "2.13.6")
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions")
+scalaVersion := "2.13.17"
+crossScalaVersions := Seq("2.12.19", "2.13.17", "3.3.7")
+
+Compile / unmanagedSourceDirectories ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, _)) => Seq((Compile / sourceDirectory).value / "scala-2")
+    case Some((3, _)) => Seq((Compile / sourceDirectory).value / "scala-3")
+    case _ => Nil
+  }
+}
+
+Test / unmanagedSourceDirectories ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, _)) => Seq((Test / sourceDirectory).value / "scala-2")
+    case Some((3, _)) => Seq((Test / sourceDirectory).value / "scala-3")
+    case _ => Nil
+  }
+}
+
+scalacOptions ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, _)) => Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions")
+    case Some((3, _)) => Seq("-deprecation", "-feature", "-language:implicitConversions")
+    case _ => Nil
+  }
+}
+
 testOptions += Tests.Argument("-oDF")
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.2.8",
+  "org.scalatest" %% "scalatest" % "3.2.19",
 ) map (_ % "test")
 
 ThisBuild / versionScheme := Some("semver-spec")
